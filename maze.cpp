@@ -365,26 +365,3 @@ int main() { //-------------------------اجرای برنامه-----------------
 
     return 0;
 }
-
-/*        switch (choice) {
-            case '1':
-                int ind;
-                last_player = ind;
-                ind = startGame_name();
-                if(ind == 101)
-                    break;
-                else
-                    game(ind);
-
-            case '2':
-                displayHistory();
-                break;
-                }
-
-            case '3':
-
-                }
-                break;
-
-            default:
-                cout << "\ninvalid input";*/
