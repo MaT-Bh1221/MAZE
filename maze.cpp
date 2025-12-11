@@ -64,7 +64,7 @@ char lostl[5][49] = {
 char MAP[H][W+1] = {
 ",-----------.-----------.--------------------.-----------.-----------------.",
 "|           |           |                    |           |                 |",
-"|O ,-----   |  ,-----.  |  .  ,-----------.  `--------   |  ,--.  .  ,--   |",
+"|  ,-----   |  ,-----.  |  .  ,-----------.  `--------   |  ,--.  .  ,--   |",
 "|  |        |  |     |  |  |  |           |              |  |  |  |  |     |",
 "|  |  ,-----'  |  .  |  |  `--\"--------.  \"  ,-----------'  \"  |  `--\"-----:",
 "|  |  |        |  |  |  |              |     |                 |           |",
@@ -311,9 +311,9 @@ void show_map(){  //---------------------چاپ ماز--------------------
     int x = char_xind, y = char_yind; 
 
     color(6);
-    cout << "Name : " << player_names[last_player] << "\tHP : " << HP << "\t\tXP : " << player_xp[last_player] << "\t\tSteps : " << step << "\tMove with W A S D | exit with 0" << "\n";
+    cout << "\n\nName : " << player_names[last_player] << "\tHP : " << HP << "\t\tXP : " << player_xp[last_player] << "\t\tSteps : " << step << "\tMove with W A S D | exit with 0" << "\n";
     color(7);
-
+    
     for(int i = 0; i < H; i++){
         for(int j = 0; j < W; j++){
             if(i == x && j == y){
