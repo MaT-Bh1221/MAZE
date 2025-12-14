@@ -14,7 +14,6 @@ long long int step = 0; // تعداد جابه جایی کاراکتر
 int HP = 3;
 int last_player = 0; // اندیس بازیکن فعلی در لیست بازیکنان 
 int char_xind = 1, char_yind = 1; // مکان اولیه کاراکتر 
-int ghost1[2], ghost2[2], ghost3[2]; // آرایه برای ذخیره مکان روح ها 
 
 bool starting; // اعتبارسنجی اجرای بازی شروع و پایان بازی 
 
@@ -30,11 +29,11 @@ char maze[5][40] = {
 };
 
 char historyl[5][40] = {
-    " *  *  *  **** ***** *****  ***** *   *",
-    " *  *  *  *      *   |   |  *   *  * * ",
-    " ****  *  ****   *   |   |  *****   *  ",
-    " *  *  *     *   *   |   |  *  *    *  ",
-    " *  *  *  ****   *   *****  *   *   *  "    
+    "*  *  *   **** ***** +---+  ***** *   *",
+    "*  *  *  *       *   |   |  *   *  * * ",
+    "****  *  ****    *   |   |  *****   *  ",
+    "*  *  *     *    *   |   |  *  *    *  ",
+    "*  *  * ****     *   +---+  *   *   *  "    
 };
 
 char menul[5][40] = {
@@ -46,19 +45,19 @@ char menul[5][40] = {
 };
 
 char wonl[5][52] = {
-    " *   *  *****  *   *  *           * *****  *     * ",
-    "  * *   *   *  *   *   *         *  *   *  * *   * ",
-    "   *    *   *  *   *    *   *   *   *   *  *  *  * ",
-    "   *    *   *  *   *     * * * *    *   *  *   * * ",
-    "   *    *****  *****      *   *     *****  *     * "
+    " *   *   ***   *   *  *           * +---+  *     * ",
+    "  * *   *   *  *   *   *         *  |   |  * *   * ",
+    "   *    *   *  *   *    *   *   *   |   |  *  *  * ",
+    "   *    *   *  *   *     * * * *    |   |  *   * * ",
+    "   *     ***    ***       *   *     +---+  *     * "
 };
 
 char lostl[5][49] = {
-    " *   *  *****  *   *  *      *****  *****  *****",
+    " *   *   ***   *   *  *       ***    ****  *****",
     "  * *   *   *  *   *  *      *   *  *        *  ",
     "   *    *   *  *   *  *      *   *  *****    *  ",
     "   *    *   *  *   *  *      *   *      *    *  ",
-    "   *    *****  *****  *****  *****  *****    *  "
+    "   *     ***    ***   *****   ***   ****     *  "
 };
 
 char MAP[H][W+1] = {
@@ -115,14 +114,22 @@ char MAP[H][W+1] = {
 "`--------------\"--------------------'O `--------------------\"--------------'"
 };
 
-void check_xp(bool iswon){ //---------------------بررسی امتیاز--------------------
+void check_xp(bool iswon, int num){ //---------------------بررسی امتیاز--------------------
+    int neg = 5; // مقدار امتیاز منفی 
+
     if(iswon)
-        player_xp[last_player] += 20;
+        if(num == 3)
+            player_xp[last_player] += 20;
+        else if(num == 4)
+            player_xp[last_player] += 25;
+        else if(num == 5)
+            player_xp[last_player] += 30;
+
     else if(!iswon){
         if(HP == 2)
-            player_xp[last_player] = max(0, player_xp[last_player]-5);
+            player_xp[last_player] = max(0, player_xp[last_player]-neg);
         else if(HP == 1)
-            player_xp[last_player] = max(0, player_xp[last_player]-5);
+            player_xp[last_player] = max(0, player_xp[last_player]-neg);
         else if(HP == 0)
             player_xp[last_player] = 0;
     }
@@ -131,7 +138,7 @@ void check_xp(bool iswon){ //---------------------بررسی امتیاز-------
 void color(int num){ // ---------------------رنگ متن ها---------------------
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), num);
 }
-// -----------------------چاپ دیزاین ها------------------------
+// -----------------------چاپ لوگو ها------------------------
 void mazelogo(){
     system("cls");
     for(int i = 0; i < 5; i++){
@@ -196,20 +203,43 @@ void lostlogo(){
 void displayHistory(){ 
     mazelogo();
     historylogo();
-
-    for(int x = 1; x <= 100; x++)
+    
+    for(int x = 1, counter = 0, charcounter = 0; x <= 100; x++)
         if(!player_names[x-1].empty() && player_names[x-1] != "0"){
+            counter++;
+
             color(3);
-            cout << "\t" << x << ". " << player_names[x-1] << "\t\tXP : " << player_xp[x-1] << "\n";
+            cout << "  " << x << ". " << player_names[x-1] << "  --  XP : " << player_xp[x-1] << "\n";
             color(7);
         }
-        else
+        else{
+            if(counter == 0)
+                cout << "\t  < LIST IS EMPTY >";
             break;
-
-    cout << "press any key to back to main menu...";
+        }
+    cout << "\n\n< press any key to back to main menu... >";
 
     char cmd = _getch();
     displayMenu();
+}
+
+int random(int min, int max){ // تابع تولید عدد رندوم در بازه دلخواه 
+    return ((min) + rand() % (max - min + 1));
+}
+
+void spawn(int ghosts[][2], int num){ //---------------------اسپاون کردن روح ها--------------------
+    srand(time(0));
+
+    step = 0;
+    char_xind = 1;
+    char_yind = 1;
+
+    for(int i = 0; i < num; i++){
+        ghosts[i][0] = random(-4,55);
+        ghosts[i][1] = random(-4,80);
+        if(ghosts[i][0] == char_xind && ghosts[i][1] == char_yind)
+            i--;
+    }
 }
 
 bool won(){ // --------------------پیغام پیروزی-----------------
@@ -221,7 +251,8 @@ bool won(){ // --------------------پیغام پیروزی-----------------
     return true;
 }
 
-bool lost(){ //--------------------پیغام شکست-----------------
+void lost(int ghosts[][2], int num){ //--------------------پیغام شکست-----------------
+    HP--;
     system("cls");
     if(HP == 0){
         lostlogo();
@@ -235,90 +266,62 @@ bool lost(){ //--------------------پیغام شکست-----------------
         cout << "\npress any key to try again...\n";
         char cmd = _getch();
         system("cls");
+        spawn(ghosts, num);
     }
-    return false;
+    check_xp(false, num);
 }
 
 void exit_g(){ // ---------------------ریست کردن اطلاعات پیشفرض برای خروج از بازی--------------------
     step = 0;
     char_xind = 1;
     char_yind = 1;
+    player_xp[last_player] = 0;
     last_player = 0;
     HP = 3;
 }
 
-void spawn(){ //---------------------اسپاون کردن روح ها--------------------
-    srand(time(0));
-    step = 0;
-
-    char_xind = 1;
-    char_yind = 1;
-
-    ghost1[0] = - 5 + rand() % 60;
-    ghost1[1] = - 5 + rand() % 80;
-    ghost2[0] = - 5 + rand() % 60;
-    ghost2[1] = - 5 + rand() % 80;
-    ghost3[0] = - 5 + rand() % 60;
-    ghost3[1] = - 5 + rand() % 80;
-}
-
-void check_ghosts(){ //---------------------حرکت دادن روح ها--------------------
+void check_ghosts(int ghosts[][2], int num){ //---------------------حرکت دادن روح ها--------------------
     if(step % step_per_step == 0){
+
+        for(int i = 0; i < num; i++){
       
-        if(ghost1[0] < char_xind)
-            ghost1[0] += 1;
-        else if(ghost1[0] > char_xind)
-            ghost1[0] -= 1;
+            if(ghosts[i][0] < char_xind)
+                ghosts[i][0] += 1;
+            else if(ghosts[i][0] > char_xind)
+                ghosts[i][0] -= 1;
 
-        if(ghost1[1] < char_yind)
-            ghost1[1] += 1;
-        else if(ghost1[1] > char_yind)
-            ghost1[1] -= 1;
-//============================================
-        if(ghost2[0] < char_xind)
-            ghost2[0] += 1;
-        else if(ghost2[0] > char_xind)
-            ghost2[0] -= 1;
+            if(ghosts[i][1] < char_yind)
+                ghosts[i][1] += 1;
+            else if(ghosts[i][1] > char_yind)
+                ghosts[i][1] -= 1;
 
-        if(ghost2[1] < char_yind)
-            ghost2[1] += 1;
-        else if(ghost2[1] > char_yind)
-            ghost2[1] -= 1;
-//============================================
-        if(ghost3[0] < char_xind)
-            ghost3[0] += 1;
-        else if(ghost3[0] > char_xind)
-            ghost3[0] -= 1;
-
-        if(ghost3[1] < char_yind)
-            ghost3[1] += 1;
-        else if(ghost3[1] > char_yind)
-            ghost3[1] -= 1;
-    }
-    // برخورد روح با کاراکتر 
-    if((ghost1[0] == char_xind && ghost1[1] == char_yind) || (ghost2[0] == char_xind && ghost2[1] == char_yind) || (ghost3[0] == char_xind && ghost3[1] == char_yind)){
-        HP--;
-        check_xp(lost());
-        if(HP > 0)
-            spawn();
+            if((ghosts[i][0] == char_xind && ghosts[i][1] == char_yind))     // برخورد روح با کاراکتر 
+                lost(ghosts, num);
+        }
     }
 }
 
-void show_map(){  //---------------------چاپ ماز--------------------
+void show_map(int ghosts[][2], int num){  //---------------------چاپ ماز--------------------
 
     system("cls");
-    check_ghosts();
+    check_ghosts(ghosts, num);
 
     int x = char_xind, y = char_yind; 
-
-    color(6);
-    cout << "\n\nName : " << player_names[last_player] << "\tHP : " << HP << "\t\tXP : " << player_xp[last_player] << "\t\tSteps : " << step << "\tMove with W A S D | exit with 0" << "\n";
-    color(7);
     
     for(int i = 0; i < H; i++){
+
         if(starting == false)
             break;
+
+        if(i == 0){
+            color(6);
+            cout << "\n\nName : " << player_names[last_player] << "\t(HP : " << HP << " -- XP : " << player_xp[last_player] << " -- Steps : " << step << ")\tMove with W A S D | exit with 0" << "\n";
+            color(7);
+        }
+
         for(int j = 0; j < W; j++){
+            bool map_cout = true; // اعتبار سنجی چاپ مپ یا روح
+
             if(i == x && j == y){
                 color(6); //yellow
                 cout << "@";
@@ -333,12 +336,16 @@ void show_map(){  //---------------------چاپ ماز--------------------
                 }
 
                 else{
-                    if((ghost1[0] == i && ghost1[1] == j) || (ghost2[0] == i && ghost2[1] == j) || (ghost3[0] == i && ghost3[1] == j)){
-                        color(4); //red
-                        cout << 'X';
-                        color(7);
+                    for(int g = 0; g < num; g++){
+                        if(i == ghosts[g][0] && j == ghosts[g][1]){
+                            color(4); //red
+                            cout << 'X';
+                            color(7);
+                            map_cout = false;
+                            break;
+                        }
                     }
-                    else{
+                    if(map_cout){
                         color(3); //blue
                         cout << MAP[i][j];
                         color(7);
@@ -350,11 +357,11 @@ void show_map(){  //---------------------چاپ ماز--------------------
     }
 }
 
-void game(int p_idx) { //---------------------فرایند اجرای بازی-------------------
-    
+void game(int p_idx, int ghosts[][2], int num) { //---------------------فرایند اجرای بازی-------------------
+    spawn(ghosts, num);
     while(starting){
         
-        show_map();
+        show_map(ghosts, num);
 
         char cmd1 = _getch(); // برای اینکه ورودی کاربر را بدون نیاز به enter زدن بگیریم
 
@@ -366,7 +373,6 @@ void game(int p_idx) { //---------------------فرایند اجرای بازی--
             char cmd1 = _getch();
             if(cmd1 == 'y' || cmd1 == 'Y'){
                 displayMenu();
-                player_xp[last_player] = 0;
                 exit_g();
                 break;
             }
@@ -378,17 +384,13 @@ void game(int p_idx) { //---------------------فرایند اجرای بازی--
             step++;
 
             if(MAP[char_xind-1][char_yind] == 'O'){
-                check_xp(won());
+                check_xp(won(), num);
                 break;
             }
             // برخورد کاراکتر با روح 
-            else if(((char_xind-1 == ghost1[0] && char_yind == ghost1[1]) || (char_xind-1 == ghost2[0] && char_yind == ghost2[1]) || (char_xind-1 == ghost3[0] && char_yind == ghost3[1])) && MAP[char_xind][char_yind-1] == ' '){
-                HP--;
-                check_xp(lost());
-                if(HP == 0)
-                    break;
-                else
-                    spawn();
+            for(int u = 0; u < num; u++){
+                if((char_xind-1 == ghosts[u][0] && char_yind == ghosts[u][1]) && MAP[char_xind][char_yind-1] == ' ')
+                    lost(ghosts, num);
             }
 
             if(MAP[char_xind-1][char_yind] == ' '){
@@ -400,17 +402,13 @@ void game(int p_idx) { //---------------------فرایند اجرای بازی--
             step++;
 
             if(MAP[char_xind+1][char_yind] == 'O'){
-                check_xp(won());
+                check_xp(won(), num);
                 break;
             }
 
-            else if(((char_xind+1 == ghost1[0] && char_yind == ghost1[1]) || (char_xind+1 == ghost2[0] && char_yind == ghost2[1]) || (char_xind+1 == ghost3[0] && char_yind == ghost3[1])) && MAP[char_xind+1][char_yind] == ' '){
-                HP--;
-                check_xp(lost());
-                if(HP == 0)
-                    break;
-                else
-                    spawn();
+            for(int u = 0; u < num; u++){
+                if((char_xind+1 == ghosts[u][0] && char_yind == ghosts[u][1]) && MAP[char_xind+1][char_yind] == ' ')
+                    lost(ghosts, num);
             }
 
             if(MAP[char_xind+1][char_yind] == ' '){
@@ -422,17 +420,13 @@ void game(int p_idx) { //---------------------فرایند اجرای بازی--
             step++;
 
             if(MAP[char_xind][char_yind-1] == 'O'){
-                check_xp(won());
+                check_xp(won(), num);
                 break;
             }
  
-            else if(((char_xind == ghost1[0] && char_yind-1 == ghost1[1]) || (char_xind == ghost2[0] && char_yind-1 == ghost2[1]) || (char_xind == ghost3[0] && char_yind-1 == ghost3[1])) && MAP[char_xind][char_yind-1] == ' '){
-                HP--;
-                check_xp(lost());
-                if(HP == 0)
-                    break;
-                else
-                    spawn();
+            for(int u = 0; u < num; u++){
+                if((char_xind == ghosts[u][0] && char_yind-1 == ghosts[u][1]) && MAP[char_xind][char_yind-1] == ' ')
+                    lost(ghosts, num);
             }
 
             if(MAP[char_xind][char_yind-1] == ' '){
@@ -444,17 +438,13 @@ void game(int p_idx) { //---------------------فرایند اجرای بازی--
             step++;
 
             if(MAP[char_xind][char_yind+1] == 'O'){
-                check_xp(won());
+                check_xp(won(), num);
                 break;
             }
 
-            else if(((char_xind == ghost1[0] && char_yind+1 == ghost1[1]) || (char_xind == ghost2[0] && char_yind+1 == ghost2[1]) || (char_xind == ghost3[0] && char_yind+1 == ghost3[1])) && MAP[char_xind][char_yind+1] == ' '){
-                HP--;
-                check_xp(lost());
-                if(HP == 0)
-                    break;
-                else
-                    spawn();
+            for(int u = 0; u < num; u++){
+                if((char_xind == ghosts[u][0] && char_yind+1 == ghosts[u][1]) && MAP[char_xind][char_yind+1] == ' ')
+                    lost(ghosts, num);
             }
 
             if(MAP[char_xind][char_yind+1] == ' '){
@@ -472,38 +462,52 @@ int startGame_name(){ //-------------------گرفتن نام کاربر برای
 
     system("cls"); // پاک کردن صفحه 
     string name;
+    int counter = 0;
 
     color(6);
     cout << "enter your name(0 to back menu) : ";
     color(7);
 
-    getline(cin, name);
+    while(true){
 
-    if (name == "0"){
-        displayMenu();
-        return 101;
-    }
+        int counter = 0;
+        getline(cin, name);
 
-    else{
-    //========================ذخیره نام و اسپاون کاراکتر ها======================
-        spawn();
+        for(char c : name)
+            counter++;
 
-        for (int i = 0; i < 100; i++) {
-            if(player_names[i] == name) {
-                return i;
+        if(counter > 20){
+            cout << "your name has more than 20 characters. enter a smaller name : ";
+            continue;
+        }
+
+        if (name == "0"){
+            displayMenu();
+            return 101;
+        }
+
+        else{
+        //========================ذخیره نام و اسپاون کاراکتر ها======================
+
+            for (int i = 0; i < 100; i++) {
+                if(player_names[i] == name) {
+                    return i;
+                }
+            }
+            for (int i = 0; i < 100; i++) {
+                if(player_names[i].empty() || player_names[i] == "0") {
+                    player_names[i] = name;
+                    return i;
+                }
             }
         }
-        for (int i = 0; i < 100; i++) {
-            if(player_names[i].empty() || player_names[i] == "0") {
-                player_names[i] = name;
-                return i;
-            }
-        }
+        return -101;
     }
-    return -101;
 }
 
 int ch_difficulty(){ // تعیین درجه سختی بازی 
+
+    int num; // تعداد روح ها 
 
     color(1);
     cout << "choose difficulty level\n  [1]\t [2]\t [3]\n\t [0]";
@@ -533,7 +537,37 @@ int ch_difficulty(){ // تعیین درجه سختی بازی
             color(7);
         }
     }
-    return 1;
+
+    color(1);
+    cout << "\n\nchoose number of ghosts\n  [3]\t [4]\t [5]\n\t [0]";
+    color(7);
+
+    while(true){
+        char cmd1 = _getch();
+
+        if(cmd1 == '3'){
+            num = 3;
+            break;
+        }
+        else if(cmd1 == '4'){
+            num = 4;
+            break;
+        }
+        else if(cmd1 == '5'){
+            num = 5;
+            break;
+        }
+        else if(cmd1 == '0'){
+            return 0;
+        }
+        else{
+            color(6);
+            cout << "\n[MAZE CORE] : invalid input";
+            color(7);
+        }
+    }
+
+    return num;
 }
 
 int main() { //-------------------------اجرای برنامه-----------------------
@@ -562,14 +596,15 @@ int main() { //-------------------------اجرای برنامه-----------------
                 continue;
             }
             else{
-                int v = ch_difficulty();
-                if(v == 0){
+                int num = ch_difficulty();
+                if(num == 0){
                     player_names[ind] = "0";
                     displayMenu();
                     continue;
                 }
+                int ghosts[num][2]; // آرایه برای ذخیره مکان روح ها 
                 starting = true;
-                game(ind);
+                game(ind, ghosts, num);
             }
         }
         else if(choice == '2')
