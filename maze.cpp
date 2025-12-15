@@ -4,7 +4,12 @@
 #include <string>
 #include <ctime>    // برای time
 #include <windows.h>  // برای رنگ
+
+
+/* <<<<<<< GITHUB LINK : https://github.com/MaT-Bh1221/MAZE >>>>>>> */
+
 using namespace std;
+
 // طول و عرض ماز 
 const int H = 51;
 const int W = 76;
@@ -117,13 +122,14 @@ char MAP[H][W+1] = {
 void check_xp(bool iswon, int num){ //---------------------بررسی امتیاز--------------------
     int neg = 5; // مقدار امتیاز منفی 
 
-    if(iswon)
+    if(iswon){
         if(num == 3)
             player_xp[last_player] += 20;
         else if(num == 4)
             player_xp[last_player] += 25;
         else if(num == 5)
             player_xp[last_player] += 30;
+    }
 
     else if(!iswon){
         if(HP == 2)
@@ -139,7 +145,7 @@ void color(int num){ // ---------------------رنگ متن ها-----------------
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), num);
 }
 // -----------------------چاپ لوگو ها------------------------
-void mazelogo(){
+void mazelogo(){ 
     system("cls");
     for(int i = 0; i < 5; i++){
         for(int j = 0; j < 40; j++){
@@ -336,7 +342,7 @@ void show_map(int ghosts[][2], int num){  //---------------------چاپ ماز--
                 }
 
                 else{
-                    for(int g = 0; g < num; g++){
+                    for(int g = 0; g < num; g++){ // بررسی موجود بودن روح ها در مکان مورد نظر 
                         if(i == ghosts[g][0] && j == ghosts[g][1]){
                             color(4); //red
                             cout << 'X';
@@ -383,7 +389,7 @@ void game(int p_idx, int ghosts[][2], int num) { //---------------------فرای
         else if (cmd1 == 'w' || cmd1 == 'W') {
             step++;
 
-            if(MAP[char_xind-1][char_yind] == 'O'){
+            if(MAP[char_xind-1][char_yind] == 'O'){ // رسیدن به خط پایان 
                 check_xp(won(), num);
                 break;
             }
@@ -393,7 +399,7 @@ void game(int p_idx, int ghosts[][2], int num) { //---------------------فرای
                     lost(ghosts, num);
             }
 
-            if(MAP[char_xind-1][char_yind] == ' '){
+            if(MAP[char_xind-1][char_yind] == ' '){ // قدر به حرکت بودن کاراکتر در فضای خالی
                 char_xind -= 1;
             }
         }
@@ -452,7 +458,7 @@ void game(int p_idx, int ghosts[][2], int num) { //---------------------فرای
             }
         }
 
-        else{
+        else{ // با فشردن کلید اشتباه نیز یک حرکت برای کاربر در نظر گرفته میشود 
             step++;
             continue;
         }
@@ -476,7 +482,7 @@ int startGame_name(){ //-------------------گرفتن نام کاربر برای
         for(char c : name)
             counter++;
 
-        if(counter > 20){
+        if(counter > 20){ // محدودیت تعداد کاراکتر های نام
             cout << "your name has more than 20 characters. enter a smaller name : ";
             continue;
         }
@@ -487,14 +493,13 @@ int startGame_name(){ //-------------------گرفتن نام کاربر برای
         }
 
         else{
-        //========================ذخیره نام و اسپاون کاراکتر ها======================
 
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < 100; i++) { // بررسی وجود پلیر از قبل 
                 if(player_names[i] == name) {
                     return i;
                 }
             }
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < 100; i++) { // ثبت پلیر جدید 
                 if(player_names[i].empty() || player_names[i] == "0") {
                     player_names[i] = name;
                     return i;
@@ -513,7 +518,7 @@ int ch_difficulty(){ // تعیین درجه سختی بازی
     cout << "choose difficulty level\n  [1]\t [2]\t [3]\n\t [0]";
     color(7);
 
-    while(true){
+    while(true){ // تعیین سرعت روح ها
         char cmd1 = _getch();
 
         if(cmd1 == '1'){
@@ -542,7 +547,7 @@ int ch_difficulty(){ // تعیین درجه سختی بازی
     cout << "\n\nchoose number of ghosts\n  [3]\t [4]\t [5]\n\t [0]";
     color(7);
 
-    while(true){
+    while(true){ // تعین تعداد روح ها 
         char cmd1 = _getch();
 
         if(cmd1 == '3'){
